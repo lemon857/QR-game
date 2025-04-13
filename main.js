@@ -89,7 +89,7 @@ function setupWebGL() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 }
 
-const texWidth = 32;
+const texWidth = 16;
 const texHeight = 32;
 
 let pixelData = new Uint8Array(texWidth * texHeight * 3);
@@ -97,9 +97,16 @@ let pixelData = new Uint8Array(texWidth * texHeight * 3);
 let gameField = new Array(texHeight * texHeight);
 
 function generateField() {
-  for (let i = 0; i < gameField.length - 32 * 16; i++) {
-    gameField[i] = Math.ceil(Math.random() * 10000) % 5 == 0;
+  // for (let i = 0; i < gameField.length - 3 * (texWidth * texHeight / 2); i++) {
+  //   gameField[i] = Math.ceil(Math.random() * 10000) % 5 == 0;
+  // }
+  for (let i = 0; i < gameField.length; i++) {
+    gameField[i] = false;
+    if (i < texWidth * 2 - 1 && i != texWidth - 1) {
+      gameField[i] = true;
+    }
   }
+  updateTexture();
 }
 
 function updateTexture() {
@@ -109,8 +116,12 @@ function updateTexture() {
     pixelData[i] = cur;
     pixelData[i + 1] = cur;
     pixelData[i + 2] = cur;
-  }
+  } 
+}
 
+function onRender() {
+  // updateTexture();
+  cur_figure.draw();
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(
     gl.TEXTURE_2D,
@@ -133,29 +144,34 @@ function updateTexture() {
 let cur_point = { x: texWidth / 2, y: texHeight - 1 };
 
 function drawPoint(point, state = true) {
-  gameField[point.x + point.y * texWidth] = state;
-
-  updateTexture();
+  let idx = point.x + point.y * texWidth;
+  gameField[idx] = state;
+  let cur = state ? 0 : 255;
+  pixelData[idx * 3] = cur;
+  pixelData[idx * 3 + 1] = cur;
+  pixelData[idx * 3 + 2] = cur;
 }
 
-function movePoint(dx, dy) {
-  if ((cur_point.x + dx < 0) || (cur_point.x + dx > texWidth - 1)
-    || (cur_point.y + dy < 0) || (cur_point.y + dy > texWidth - 1)
-    || (gameField[(cur_point.x + dx) + (cur_point.y + dy) * texWidth])) {
-    return;
-  }
-
-  gameField[cur_point.x + cur_point.y * texWidth] = false;
-  cur_point.x += dx;
-  cur_point.y += dy;
-  gameField[cur_point.x + cur_point.y * texWidth] = true;
-}
+// function movePoint(dx, dy) {
+//   if ((cur_point.x + dx < 0) || (cur_point.x + dx > texWidth - 1)
+//     || (cur_point.y + dy < 0) || (cur_point.y + dy > texWidth - 1)
+//     || (gameField[(cur_point.x + dx) + (cur_point.y + dy) * texWidth])) {
+//     return;
+//   }
+//
+//   gameField[cur_point.x + cur_point.y * texWidth] = false;
+//   cur_point.x += dx;
+//   cur_point.y += dy;
+//   gameField[cur_point.x + cur_point.y * texWidth] = true;
+// }
 
 class Figure {
   points = [];
   states = [];
   cur_state = 0;
   max_states = 0;
+
+  is_movable = true;
 
   x = 0;
   y = 0;
@@ -165,12 +181,6 @@ class Figure {
     this.y = y;
     this.states = states;
     this.max_states = states.length;
-    this.use_state();
-  }
-
-  use_state() {
-    this.points = [];
-
     const state = this.states[this.cur_state];
     for (let i = 0; i < state.length; ++i) {
       this.points.push({
@@ -178,9 +188,25 @@ class Figure {
         y: this.y + state[i].y
       });
     }
+
+  }
+
+  use_state() {
+
+    const state = this.states[this.cur_state];
+    for (let i = 0; i < state.length; ++i) {
+      this.points[i].x = this.x + state[i].x;
+      this.points[i].y = this.y + state[i].y;
+      // this.points.push({
+      //   x: this.x + state[i].x,
+      //   y: this.y + state[i].y
+      // });
+    }
   }
 
   next_rotate() {
+    if (!this.is_movable) return;
+
     this.clear_state();
     let old_cur = this.cur_state;
 
@@ -221,10 +247,16 @@ class Figure {
   }
 
   move(dx, dy) {
+    if (!this.is_movable) return;
+
     for (let i = 0; i < this.points.length; ++i) {
       if (this.points[i].x + dx < 0 || this.points[i].y + dy < 0 
         || this.points[i].x + dx > texWidth - 1 || this.points[i].y + dy > texHeight - 1
         || this.is_other_wall(this.points[i].x + dx, this.points[i].y + dy)) {
+
+        if (this.is_other_wall(this.points[i].x, this.points[i].y + dy) || this.points[i].y + dy <= 0) {
+          this.is_movable = false;
+        }
         return;
       }
     }
@@ -251,111 +283,130 @@ class Figure {
   }
 }
 
-let cube = new Figure(20, 25, [
-  [ {x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}, {x: 1, y: 1} ]
-]);
+class Cube extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}, {x: 1, y: 1} ]
+    ]);
+  }
+}
 
-let stick = new Figure(20, 25, [
-  [ {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0} ],
-  [ {x: 0, y: -1}, {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2} ]
-]);
+class Stick extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0} ],
+      [ {x: 0, y: -1}, {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2} ]
+    ]);
+  }
+}
 
-let tlike = new Figure(20, 25, [
-  [ {x: 0, y: 0}, {x: -1, y: 0}, {x: 1, y: 0}, {x: 0, y: 1} ],
-  [ {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}, {x: 1, y: 0} ],
-  [ {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: -1} ],
-  [ {x: 0, y: 0}, {x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0} ]
-]);
+class TLike extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: 0, y: 0}, {x: -1, y: 0}, {x: 1, y: 0}, {x: 0, y: 1} ],
+      [ {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: -1}, {x: 1, y: 0} ],
+      [ {x: 0, y: 0}, {x: 1, y: 0}, {x: -1, y: 0}, {x: 0, y: -1} ],
+      [ {x: 0, y: 0}, {x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0} ]
+    ]);
+  }
+}
 
-let lfstair = new Figure(20, 25, [
-  [ {x: 0, y: 0}, {x: -1, y: 0}, {x: 0, y: -1}, {x: 1, y: -1} ],
-  [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}, {x: 0, y: -1} ]
-]);
+class LFstairs extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: 0, y: 0}, {x: -1, y: 0}, {x: 0, y: -1}, {x: 1, y: -1} ],
+      [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}, {x: 0, y: -1} ]
+    ]);
+  }
+}
 
-let rfstair = new Figure(20, 25, [
-  [ {x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y: -1}, {x: -1, y: -1} ],
-  [ {x: 0, y: 0}, {x: 0, y: -1}, {x: -1, y: 0}, {x: -1, y: 1} ]
-]);
+class RFstairs extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y: -1}, {x: -1, y: -1} ],
+      [ {x: 0, y: 0}, {x: 0, y: -1}, {x: -1, y: 0}, {x: -1, y: 1} ]
+    ]);
+  }
+}
 
-let cur_figure = rfstair;
+let spawn_Y = Math.floor(texHeight * (9/10) + 2);
 
+console.log("Spawn Y: " + spawn_Y);
 
-// let figure = [
-//   { x: texWidth / 2, y: texHeight - 1 },
-//   { x: (texWidth / 2) - 1, y: texHeight - 1 },
-//   { x: (texWidth / 2) + 1, y: texHeight - 1 },
-//   { x: texWidth / 2, y: texHeight - 2 }
-// ]
-//
-// let figure_state = 0;
-//
-// function movePointInFigure(figure, i, dx, dy) {
-//   if ((figure[i].x + dx < 0) || (figure[i].x + dx > texWidth - 1)
-//     || (figure[i].y + dy < 0) || (figure[i].y + dy > texWidth - 1)) {
-//     return figure;
-//   }
-//
-//   gameField[figure[i].x + figure[i].y * texWidth] = false;
-//   figure[i].x += dx;
-//   figure[i].y += dy;
-//   gameField[figure[i].x + figure[i].y * texWidth] = true;
-//   return figure;
-// }
-//
-// function isFigureContains(x, y) {
-//   for (let i = 0; i < figure.length; ++i) {
-//     if (figure[i].x == x && figure[i].y == y) {
-//       return true;
-//     }
-//   }
-//   return false;
-// }
-// function moveFigure(dx, dy) {
-//   for (let i = 0; i < figure.length; ++i) {
-//     if ((figure[i].x + dx < 0) || (figure[i].x + dx > texWidth - 1)
-//       || (figure[i].y + dy < 0) || (figure[i].y + dy > texWidth - 1)
-//       || ((gameField[(figure[i].x + dx) + (figure[i].y + dy) * texWidth]) && !isFigureContains(figure[i].x + dx, figure[i].y + dy))) {
-//       console.log('can\'t move!');
-//       return;
-//     }
-//   }
-//
-//   for (let i = 0; i < figure.length; ++i) {
-//     gameField[figure[i].x + figure[i].y * texWidth] = false;
-//     figure[i].x += dx;
-//     figure[i].y += dy;
-//     gameField[figure[i].x + figure[i].y * texWidth] = true;
-//   }
-// }
-//
-// function rotateFigure() {
-//   if (figure_state == 0) {
-//     figure = movePointInFigure(figure, 1, 1, 1);
-//     ++figure_state;
-//   } else if (figure_state == 1) {
-//     figure = movePointInFigure(figure, 3, -1, 1);
-//     ++figure_state;
-//   } else if (figure_state == 1) {
-//     figure = movePointInFigure(figure, 2, -1, -1);
-//     ++figure_state;
-//   } else {
-//     figure = movePointInFigure(figure, 1, 1, -1);
-//     figure_state = 0;
-//   }
-// }
+function getRandX() {
+  return (Math.floor(Math.random() * 10000) % (texWidth - 4)) + 2;
+}
+
+let cur_figure;
+
+function nextFigure() {
+  let next = Math.floor(Math.random() * 5);
+  switch (next) {
+  case 0:
+    cur_figure = new Cube(getRandX(), spawn_Y);
+    break;
+  case 1:
+    cur_figure = new Stick(getRandX(), spawn_Y);
+    break;
+  case 2:
+    cur_figure = new TLike(getRandX(), spawn_Y);
+    break;
+  case 3:
+    cur_figure = new LFstairs(getRandX(), spawn_Y);
+    break;
+  case 4:
+    cur_figure = new RFstairs(getRandX(), spawn_Y);
+    break;  
+  }
+}
+
+let score_element;
+let score = 0;
+
+function updateField() {
+  for (let i = 0; i < texHeight; i++) {
+    let line = true;
+    for (let j = 0; j < texWidth; ++j) {
+      if (!gameField[j + i * texWidth]) {
+        line = false;
+        break;
+      }
+    }
+
+    if (!line) continue;
+    
+    for (let k = i; k < texHeight - 1; ++k) {
+      for (let j = 0; j < texWidth; ++j) {
+        gameField[j + k * texWidth] = gameField[j + (k + 1) * texWidth];
+      }
+    }
+
+    i = 0;
+    score++;
+    score_element.textContent = "Score: " + score;
+    updateField();
+  }
+}
 
 function mainLoop() {
-  //movePoint(0, -1);
-  //drawPoint();
 
-  cur_figure.draw();
-  updateTexture();
+  cur_figure.move(0, -1);
+  // cur_figure.draw();
+
+  if (!cur_figure.is_movable) {
+    updateField();    
+    updateTexture();
+    nextFigure(); 
+  }
+
+  // updateTexture();
 }
 
 let main_loop_id;
+let main_render_id;
 
 document.addEventListener('keypress', function(event) {
-  console.log(event.keyCode);
+  // console.log(event.keyCode);
 
   if (event.keyCode == 97) {          // a
     cur_figure.move(-1, 0);
@@ -364,7 +415,7 @@ document.addEventListener('keypress', function(event) {
     cur_figure.move(1, 0);
     // alert('d');
   } else if (event.keyCode == 119) {  // w
-    cur_figure.move(0, 1);
+    // cur_figure.move(0, 1);
     // alert('w');
   } else if (event.keyCode == 115) {  // s
     cur_figure.move(0, -1);
@@ -372,18 +423,24 @@ document.addEventListener('keypress', function(event) {
   } else if (event.keyCode == 114) {  // r 
     cur_figure.next_rotate();
 
-  } else if (event.keyCode == 103) {   // g
+  } else if (event.keyCode == 103) {  // g
     clearInterval(main_loop_id);
+    clearInterval(main_render_id);
     alert('Game stop, reload page for restart');
   } 
 });
 
 document.addEventListener('DOMContentLoaded', function() {
   canvas = document.getElementById("glCanvas");
+  score_element = document.getElementById("score");
 
   setupWebGL();
 
   generateField();
 
-  main_loop_id = setInterval(mainLoop, 100)
+  nextFigure();
+
+  main_loop_id = setInterval(mainLoop, 500);
+
+  main_render_id = setInterval(onRender, 10);
 });

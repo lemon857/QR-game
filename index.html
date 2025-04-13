@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Test webGL</title>
-  <style>
-    canvas { border: 1px solid black; }
-  </style>
-</head>
-<body>
-<canvas id="glCanvas" width="256" height="256"></canvas>
-<script src="main.js"></script>
-</body>
+    <meta charset="UTF-8">
+    <title>Test webGL</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <canvas id="glCanvas" width="256" height="512"></canvas>
+
+    <span id="score" class="ScoreText">Score: 0</span>
+    <div class="Description">
+      A, S, D - for move figure |
+      R - for rotate |
+      G - for stop |
+    </div>
+
+    <script src="main.js"></script>
+  </body>
 </html>

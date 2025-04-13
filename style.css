@@ -1,0 +1,15 @@
+canvas {
+  border: 1px solid black; 
+}
+
+.ScoreText {
+  position: absolute;
+  top: 10%;
+  left: 30%;
+}
+
+.Description {
+  position: absolute;
+  top: 14%;
+  left: 30%;
+}

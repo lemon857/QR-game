@@ -1,9 +1,4 @@
-const canvas = document.getElementById("glCanvas");
-const gl = canvas.getContext("webgl");
-
-if (!gl) {
-  alert("WebGL not supported!");
-}
+let canvas;
 
 const vsSource = `
   attribute vec2 aPosition;
@@ -52,35 +47,47 @@ function createProgram(vsSource, fsSource) {
   return program;
 }
 
-const program = createProgram(vsSource, fsSource);
-gl.useProgram(program);
+let gl;
+let texture;
 
-const vertices = new Float32Array([
-  -1, -1,   0, 0,
-   1, -1,   1, 0,
-  -1,  1,   0, 1,
-   1,  1,   1, 1,
-]);
+function setupWebGL() {
 
-const vertexBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  gl = canvas.getContext("webgl");
 
-const aPosition = gl.getAttribLocation(program, 'aPosition');
-const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
+  if (!gl) {
+    alert("WebGL not supported!");
+  }
 
-gl.enableVertexAttribArray(aPosition);
-gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 16, 0);
+  const program = createProgram(vsSource, fsSource);
+  gl.useProgram(program);
 
-gl.enableVertexAttribArray(aTexCoord);
-gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 16, 8);
+  const vertices = new Float32Array([
+    -1, -1,   0, 0,
+     1, -1,   1, 0,
+    -1,  1,   0, 1,
+     1,  1,   1, 1,
+  ]);
 
-const texture = gl.createTexture();
-gl.bindTexture(gl.TEXTURE_2D, texture);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  const vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+  const aPosition = gl.getAttribLocation(program, 'aPosition');
+  const aTexCoord = gl.getAttribLocation(program, 'aTexCoord');
+
+  gl.enableVertexAttribArray(aPosition);
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 16, 0);
+
+  gl.enableVertexAttribArray(aTexCoord);
+  gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 16, 8);
+
+  texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+}
 
 const texWidth = 32;
 const texHeight = 32;
@@ -345,11 +352,9 @@ function mainLoop() {
   updateTexture();
 }
 
-generateField();
+let main_loop_id;
 
-const main_loop_id = setInterval(mainLoop, 100);
-
-document.addEventListener("keypress", function(event) {
+document.addEventListener('keypress', function(event) {
   console.log(event.keyCode);
 
   if (event.keyCode == 97) {          // a
@@ -371,4 +376,14 @@ document.addEventListener("keypress", function(event) {
     clearInterval(main_loop_id);
     alert('Game stop, reload page for restart');
   } 
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  canvas = document.getElementById("glCanvas");
+
+  setupWebGL();
+
+  generateField();
+
+  main_loop_id = setInterval(mainLoop, 100)
 });

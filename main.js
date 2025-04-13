@@ -102,9 +102,9 @@ function generateField() {
   // }
   for (let i = 0; i < gameField.length; i++) {
     gameField[i] = false;
-    if (i < texWidth * 2 - 1 && i != texWidth - 1) {
-      gameField[i] = true;
-    }
+    // if (i < texWidth * 2 - 1 && i != texWidth - 1) {
+    //   gameField[i] = true;
+    // }
   }
   updateTexture();
 }

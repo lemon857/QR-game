@@ -50,6 +50,13 @@ function createProgram(vsSource, fsSource) {
 let gl;
 let texture;
 
+const texWidth = 16;
+const texHeight = 32;
+
+let pixelData = new Uint8Array(texWidth * texHeight * 3);
+
+let gameField = new Array(texHeight * texHeight);
+
 function setupWebGL() {
 
   gl = canvas.getContext("webgl");
@@ -88,13 +95,6 @@ function setupWebGL() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 }
-
-const texWidth = 16;
-const texHeight = 32;
-
-let pixelData = new Uint8Array(texWidth * texHeight * 3);
-
-let gameField = new Array(texHeight * texHeight);
 
 function generateField() {
   // for (let i = 0; i < gameField.length - 3 * (texWidth * texHeight / 2); i++) {
@@ -356,6 +356,28 @@ class RFstairs extends Figure {
   }
 }
 
+class RLike extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: 0, y: 0}, {x: -1, y: 0}, {x: -1, y: 1}, {x: 1, y: 0} ],
+      [ {x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 1}, {x: 0, y: -1} ],
+      [ {x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: -1}, {x: -1, y: 0} ],
+      [ {x: 0, y: 0}, {x: 0, y: -1}, {x: -1, y: -1}, {x: 0, y: 1} ]
+    ]);
+  }
+}
+
+class LLike extends Figure {
+  constructor(x, y) {
+    super(x, y, [
+      [ {x: 0, y: 0}, {x: -1, y: 0}, {x: -1, y: -1}, {x: 1, y: 0} ],
+      [ {x: 0, y: 0}, {x: 0, y: 1}, {x: -1, y: 1}, {x: 0, y: -1} ],
+      [ {x: 0, y: 0}, {x: 1, y: 0}, {x: 1, y: 1}, {x: -1, y: 0} ],
+      [ {x: 0, y: 0}, {x: 0, y: -1}, {x: 1, y: -1}, {x: 0, y: 1} ]
+    ]);
+  }
+}
+
 let spawn_Y = Math.floor(texHeight * (9/10) + 2);
 
 console.log("Spawn Y: " + spawn_Y);
@@ -367,7 +389,7 @@ function getRandX() {
 let cur_figure;
 
 function nextFigure() {
-  let next = Math.floor(Math.random() * 5);
+  let next = Math.floor(Math.random() * 6);
   switch (next) {
   case 0:
     cur_figure = new Cube(getRandX(), spawn_Y);
@@ -383,7 +405,13 @@ function nextFigure() {
     break;
   case 4:
     cur_figure = new RFstairs(getRandX(), spawn_Y);
-    break;  
+    break;
+  case 5:
+    cur_figure = new RLike(getRandX(), spawn_Y);
+    break;
+  case 6:
+    cur_figure = new LLike(getRandX(), spawn_Y);
+    break;
   }
 }
 

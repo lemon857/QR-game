@@ -143,14 +143,19 @@ function onRender() {
 
 let cur_point = { x: texWidth / 2, y: texHeight - 1 };
 
-function drawPoint(point, state = true) {
+function drawPoint(point, cur) {
   let idx = point.x + point.y * texWidth;
-  gameField[idx] = state;
-  let cur = state ? 0 : 255;
+
   pixelData[idx * 3] = cur;
   pixelData[idx * 3 + 1] = cur;
   pixelData[idx * 3 + 2] = cur;
+
 }
+
+function drawToField(point, state = true) {
+  gameField[point.x + point.y * texWidth] = state;
+  drawPoint(point, state ? 0 : 255);
+  }
 
 // function movePoint(dx, dy) {
 //   if ((cur_point.x + dx < 0) || (cur_point.x + dx > texWidth - 1)
@@ -166,6 +171,7 @@ function drawPoint(point, state = true) {
 // }
 
 class Figure {
+  shadow = [];
   points = [];
   states = [];
   cur_state = 0;
@@ -232,17 +238,25 @@ class Figure {
         x: this.x + state[i].x,
         y: this.y + state[i].y
       });
-    }  }
+    }
+    this.updateShadow();
+  }
 
   clear_state() {
+    for (let i = 0; i < this.shadow.length; ++i) {
+      drawPoint(this.shadow[i], 255);
+    }
     for (let i = 0; i < this.points.length; ++i) {
-      drawPoint(this.points[i], false);
+      drawToField(this.points[i], false);
     }
   }
 
   draw() {
+    for (let i = 0; i < this.shadow.length; ++i) {
+      drawPoint(this.shadow[i], 192);
+    }
     for (let i = 0; i < this.points.length; ++i) {
-      drawPoint(this.points[i], true);
+      drawToField(this.points[i], true);
     }
   }
 
@@ -267,6 +281,19 @@ class Figure {
     this.y += dy;
 
     this.use_state();
+    this.updateShadow();
+  }
+
+  updateShadow() {
+    this.shadow = [];
+    for (let i = 0; i < this.points.length; ++i) {
+      let px = this.points[i].x;
+      let py = this.points[i].y;
+      for (let k = py - 1; k >= 0; --k) {
+        if (gameField[px + k * texWidth]) continue;
+        this.shadow.push({ x: px, y: k });
+      }
+    }
   }
 
   is_other_wall(x, y) {

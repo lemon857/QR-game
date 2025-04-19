@@ -144,9 +144,11 @@ class Cube extends Figure {
 
 class Stick extends Figure {
   constructor(x, y) {
-    super(x, y, [
-      [ {x: -1, y: 0}, {x: 0, y: 0}, {x: 1, y: 0}, {x: 2, y: 0} ],
-      [ {x: 0, y: -1}, {x: 0, y: 0}, {x: 0, y: 1}, {x: 0, y: 2} ]
+    super(x - 0.5, y - 0.5, [
+      [ {x: -1.5, y: 0.5}, {x: -0.5, y: 0.5}, {x: 0.5, y: 0.5}, {x: 1.5, y: 0.5} ],
+      [ {x: 0.5, y: 1.5}, {x: 0.5, y: 0.5}, {x: 0.5, y: -0.5}, {x: 0.5, y: -1.5} ],
+      [ {x: -1.5, y: -0.5}, {x: -0.5, y: -0.5}, {x: 0.5, y: -0.5}, {x: 1.5, y: -0.5} ],
+      [ {x: -0.5, y: 1.5}, {x: -0.5, y: 0.5}, {x: -0.5, y: -0.5}, {x: -0.5, y: -1.5} ]
     ]);
   }
 }
@@ -165,8 +167,10 @@ class TLike extends Figure {
 class LFstairs extends Figure {
   constructor(x, y) {
     super(x, y, [
+      [ {x: 0, y: 0}, {x: -1, y: 1}, {x: 0, y: 1}, {x: 1, y: 0} ],
+      [ {x: 0, y: 0}, {x: 0, y: -1}, {x: 1, y: 0}, {x: 1, y: 1} ],
       [ {x: 0, y: 0}, {x: -1, y: 0}, {x: 0, y: -1}, {x: 1, y: -1} ],
-      [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 1, y: 0}, {x: 0, y: -1} ]
+      [ {x: 0, y: 0}, {x: -1, y: -1}, {x: -1, y: 0}, {x: 0, y: 1} ]
     ]);
   }
 }
@@ -174,8 +178,10 @@ class LFstairs extends Figure {
 class RFstairs extends Figure {
   constructor(x, y) {
     super(x, y, [
-      [ {x: 0, y: 0}, {x: 1, y: 0}, {x: 0, y: -1}, {x: -1, y: -1} ],
-      [ {x: 0, y: 0}, {x: 0, y: -1}, {x: -1, y: 0}, {x: -1, y: 1} ]
+      [ {x: 0, y: 0}, {x: -1, y: 0}, {x: 0, y: 1}, {x: 1, y: 1} ],
+      [ {x: 0, y: 0}, {x: 0, y: 1}, {x: 1, y: 0}, {x: 1, y: -1} ],
+      [ {x: 0, y: 0}, {x: -1, y: -1}, {x: 0, y: -1}, {x: 1, y: 0} ],
+      [ {x: 0, y: 0}, {x: -1, y: 1}, {x: -1, y: 0}, {x: 0, y: -1} ]
     ]);
   }
 }

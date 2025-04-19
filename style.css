@@ -1,6 +1,5 @@
 body {
   background-color: #777777;
-
 }
 
 canvas {
@@ -17,4 +16,11 @@ canvas {
   position: absolute;
   top: 14%;
   left: 30%;
+}
+
+.RecordText {
+  position: absolute;
+  top: 6%;
+  left: 30%;
+  color: #EFF0E0;
 }

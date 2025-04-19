@@ -15,6 +15,7 @@ let spawn_Y;
 let cur_figure;
 
 let score_element;
+let record_element;
 let score = 0;
 
 let main_loop_id;
@@ -29,6 +30,14 @@ function initSize(width) {
   gameField = new Array(texHeight * texHeight);
 
   spawn_Y = Math.floor(texHeight * (11/12));
+
+  setCookie('size', texWidth, 365)
+
+  updateRecord()
+}
+
+function updateRecord() {
+  record_element.textContent = "The local record for current size: " + getScore(texWidth)
 }
 
 function generateField() {
@@ -69,6 +78,10 @@ function updateField() {
     i = 0;
     score++;
     score_element.textContent = "Score: " + score;
+    if (getScore(texWidth) < score) {
+      setScore(score, texWidth);
+      updateRecord()
+    }
     updateField();
   }
 }
@@ -76,15 +89,12 @@ function updateField() {
 function mainLoop() {
 
   cur_figure.move(0, -1);
-  // cur_figure.draw();
 
   if (!cur_figure.is_movable) {
     updateField();    
     updateTexture();
     nextFigure(); 
   }
-
-  // updateTexture();
 }
 
 function updateResolution(e) {
@@ -102,16 +112,13 @@ document.addEventListener('keypress', function(event) {
 
   if (event.keyCode == 97) {          // a
     cur_figure.move(-1, 0);
-    // alert('a');
+
   } else if (event.keyCode == 100) {  // d
     cur_figure.move(1, 0);
-    // alert('d');
-  } else if (event.keyCode == 119) {  // w
-    // cur_figure.move(0, 1);
-    // alert('w');
+
   } else if (event.keyCode == 115) {  // s
     cur_figure.move(0, -1);
-    // alert('s');
+
   } else if (event.keyCode == 114) {  // r 
     cur_figure.next_rotate();
 
@@ -127,8 +134,9 @@ const resolutions = [ 8, 12, 16, 20 ];
 document.addEventListener('DOMContentLoaded', function() {
   canvas = document.getElementById("glCanvas");
   score_element = document.getElementById("score");
+  record_element = document.getElementById("record")
 
-  initSize(8);
+  initSize(Number(getCookie('size')) == 0 ? 8 : Number(getCookie('size')));
 
   let select = document.getElementById("selectElement");
   
@@ -139,6 +147,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     select.appendChild(opt);
   }
+
+  select.selectedIndex = (texWidth - 8) / 4;
 
   select.addEventListener('change', updateResolution);
 

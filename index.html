@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Test webGL</title>
+    <title>Super tetris</title>
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
@@ -14,8 +14,12 @@
       A, S, D - for move figure |
       R - for rotate |
       G - for stop |
+      Space - for drop
     </div>
-    <select id="selectElement"> </select>
+    <select class="SelectSize" id="selectElement"> </select>
+    <button class="RestartButton" onclick="restartGame()">Restart</button>
+    <span class="TextShadow">Enable shadow</span>
+    <input type="checkbox" class="ShadowSwitch" id="shadowSwitch">
 
     <script src="main.js"></script>
     <script src="figures.js"></script>

@@ -27,7 +27,7 @@ class Figure {
       });
     }
     this.color_number = (Math.floor(Math.random() * 10000) % (colors.length - 1)) + 1
-    console.log(this.color_number)
+    // console.log(this.color_number)
   }
 
   use_state() {
@@ -68,12 +68,17 @@ class Figure {
         y: this.y + state[i].y
       });
     }
-    this.updateShadow();
+
+    if (enable_shadows) {
+      this.updateShadow();
+    }
   }
 
   clear_state() {
-    for (let i = 0; i < this.shadow.length; ++i) {
-      drawPoint(this.shadow[i], 255);
+    if (shadow_switcher) {
+      for (let i = 0; i < this.shadow.length; ++i) {
+        drawPoint(this.shadow[i], 255);
+      }
     }
     for (let i = 0; i < this.points.length; ++i) {
       drawToFieldRGB(this.points[i], 0);
@@ -81,8 +86,10 @@ class Figure {
   }
 
   draw() {
-    for (let i = 0; i < this.shadow.length; ++i) {
-      drawPoint(this.shadow[i], 192);
+    if (enable_shadows) {
+      for (let i = 0; i < this.shadow.length; ++i) {
+        drawPoint(this.shadow[i], 192);
+      }
     }
     for (let i = 0; i < this.points.length; ++i) {
       drawToFieldRGB(this.points[i], this.color_number);
@@ -110,7 +117,10 @@ class Figure {
     this.y += dy
 
     this.use_state()
-    this.updateShadow()
+
+    if (enable_shadows) {
+      this.updateShadow()
+    }
   }
 
   drop() {
@@ -123,7 +133,7 @@ class Figure {
         if (this.is_other_wall(px, k - 1) || k == 0) {
           if (dy > py - k) {
             dy = py - k 
-            console.log('K: ' + k + ' dy: ' + dy)
+            // console.log('K: ' + k + ' dy: ' + dy)
           }
         }
       }
@@ -137,7 +147,10 @@ class Figure {
     this.y -= dy;
 
     this.use_state()
-    this.updateShadow()
+
+    if (enable_shadows) {
+      this.updateShadow()
+    }
   }
 
   updateShadow() {

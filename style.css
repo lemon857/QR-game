@@ -24,3 +24,33 @@ canvas {
   left: 30%;
   color: #EFF0E0;
 }
+
+.RestartButton {
+  position: absolute;
+  top: 20%;
+  left: 35%;
+  color: grey;
+  border-radius: 7px;
+  width: 5%;
+  height: 3%;
+}
+
+.SelectSize {
+  position: absolute;
+  top: 20%;
+  left: 30%;
+  border-radius: 7px;
+}
+
+.TextShadow {
+  position: absolute;
+  top: 20%;
+  left: 45%;
+}
+
+.ShadowSwitch {
+  position: absolute;
+  top: 20%;
+  left: 51%;
+  border-radius: 3px;
+}

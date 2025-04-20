@@ -1,25 +1,28 @@
-let canvas;
+let canvas
 
-let gl;
-let texture;
+let gl
+let texture
 
-let texWidth;
-let texHeight;
+let texWidth
+let texHeight
 
-let pixelData;
+let pixelData
 
-let gameField;
+let gameField
 
-let spawn_Y;
+let spawn_Y
 
-let cur_figure;
+let cur_figure
 
-let score_element;
-let record_element;
-let score = 0;
+let score_element
+let record_element
+let shadow_switcher
+let score = 0
 
-let main_loop_id;
-let main_render_id;
+let main_loop_id
+let main_render_id
+
+let enable_shadows = true
 
 let colors = [ 
   {R: 255, G: 255, B: 255},
@@ -119,6 +122,7 @@ function mainLoop() {
 }
 
 function updateResolution(e) {
+  e.target.blur()
   cur_width = e.target.options[e.target.selectedIndex].value;
 
   initSize(cur_width);
@@ -128,11 +132,28 @@ function updateResolution(e) {
   nextFigure();
 }
 
+function startGame() {
+  generateField();
+
+  nextFigure();
+
+  main_loop_id = setInterval(mainLoop, 500);
+
+  main_render_id = setInterval(onRender, 10);
+
+}
+
 function stopGame() {
   lose_flag = false
   clearInterval(main_loop_id)
   clearInterval(main_render_id)
-  alert('Game stop, reload page for restart, your record: ' + score)
+  // alert('Game stop, reload page for restart, your record: ' + score)
+}
+
+function restartGame() {
+  stopGame()
+
+  startGame()  
 }
 
 document.addEventListener('keypress', function(event) {
@@ -158,36 +179,48 @@ document.addEventListener('keypress', function(event) {
   }
 });
 
-const resolutions = [ 8, 12, 16, 20 ];
+const resolutions = [ 8, 12, 16, 20 ]
 
 document.addEventListener('DOMContentLoaded', function() {
-  canvas = document.getElementById("glCanvas");
-  score_element = document.getElementById("score");
+  canvas = document.getElementById("glCanvas")
+  score_element = document.getElementById("score")
   record_element = document.getElementById("record")
 
-  initSize(Number(getCookie('size')) == 0 ? 8 : Number(getCookie('size')));
+  shadow_switcher = document.getElementById("shadowSwitch")
 
-  let select = document.getElementById("selectElement");
+  shadow_switcher.addEventListener('change', function() {
+    shadow_switcher.blur()
+    if (shadow_switcher.checked) {
+      enable_shadows = true
+      setCookie('enable_shadows', 'true')
+    } else {
+      enable_shadows = false
+      setCookie('enable_shadows', 'false')
+    }
+  })
+
+  // console.log(getCookie('enable_shadows'))
+  enable_shadows = (getCookie('enable_shadows') == 'true')
+  shadow_switcher.checked = enable_shadows
+  
+  initSize(Number(getCookie('size')) == 0 ? 8 : Number(getCookie('size')))
+
+  let select = document.getElementById("selectElement")
   
   for (let i = 0; i < resolutions.length; ++i) {
-    var opt = document.createElement('option');
-    opt.value = resolutions[i];
-    opt.innerHTML = resolutions[i] + "x" + resolutions[i] * 2;
+    var opt = document.createElement('option')
+    opt.value = resolutions[i]
+    opt.innerHTML = resolutions[i] + "x" + resolutions[i] * 2
 
-    select.appendChild(opt);
+    select.appendChild(opt)
   }
 
-  select.selectedIndex = (texWidth - 8) / 4;
+  select.selectedIndex = (texWidth - 8) / 4
 
-  select.addEventListener('change', updateResolution);
+  select.addEventListener('change', updateResolution)
 
-  setupWebGL();
+  setupWebGL()
 
-  generateField();
+  startGame()
 
-  nextFigure();
-
-  main_loop_id = setInterval(mainLoop, 500);
-
-  main_render_id = setInterval(onRender, 10);
-});
+ });

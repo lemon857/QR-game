@@ -7,6 +7,10 @@ class Figure {
 
   is_movable = true;
 
+  is_dropped = false
+
+  color_number = 0
+
   x = 0;
   y = 0;
 
@@ -22,7 +26,8 @@ class Figure {
         y: this.y + state[i].y
       });
     }
-
+    this.color_number = (Math.floor(Math.random() * 10000) % (colors.length - 1)) + 1
+    console.log(this.color_number)
   }
 
   use_state() {
@@ -71,7 +76,7 @@ class Figure {
       drawPoint(this.shadow[i], 255);
     }
     for (let i = 0; i < this.points.length; ++i) {
-      drawToField(this.points[i], false);
+      drawToFieldRGB(this.points[i], 0);
     }
   }
 
@@ -80,7 +85,7 @@ class Figure {
       drawPoint(this.shadow[i], 192);
     }
     for (let i = 0; i < this.points.length; ++i) {
-      drawToField(this.points[i], true);
+      drawToFieldRGB(this.points[i], this.color_number);
     }
   }
 
@@ -99,13 +104,40 @@ class Figure {
       }
     }
 
-    this.clear_state();
+    this.clear_state()
 
-    this.x += dx;
-    this.y += dy;
+    this.x += dx
+    this.y += dy
 
-    this.use_state();
-    this.updateShadow();
+    this.use_state()
+    this.updateShadow()
+  }
+
+  drop() {
+    if (this.is_dropped) return
+    let dy = texHeight
+    for (let i = 0; i < this.points.length; ++i) {
+      let px = this.points[i].x
+      let py = this.points[i].y
+      for (let k = py - 1; k >= 0; --k) {
+        if (this.is_other_wall(px, k - 1) || k == 0) {
+          if (dy > py - k) {
+            dy = py - k 
+            console.log('K: ' + k + ' dy: ' + dy)
+          }
+        }
+      }
+    }
+    if (dy == texHeight) return
+
+    this.is_dropped = true
+
+    this.clear_state()
+
+    this.y -= dy;
+
+    this.use_state()
+    this.updateShadow()
   }
 
   updateShadow() {
@@ -114,7 +146,7 @@ class Figure {
       let px = this.points[i].x;
       let py = this.points[i].y;
       for (let k = py - 1; k >= 0; --k) {
-        if (gameField[px + k * texWidth]) continue;
+        if (gameField[px + k * texWidth]) break
         this.shadow.push({ x: px, y: k });
       }
     }

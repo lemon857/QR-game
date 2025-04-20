@@ -111,10 +111,22 @@ function drawPoint(point, cur) {
   pixelData[idx * 3] = cur;
   pixelData[idx * 3 + 1] = cur;
   pixelData[idx * 3 + 2] = cur;
-
 }
 
-function drawToField(point, state = true) {
+function drawPointRGB(point, color) {
+  let idx = point.x + point.y * texWidth;
+
+  pixelData[idx * 3] = color.R;
+  pixelData[idx * 3 + 1] = color.G;
+  pixelData[idx * 3 + 2] = color.B;
+}
+
+// function drawToField(point, state = true) {
+//   gameField[point.x + point.y * texWidth] = state;
+//   drawPoint(point, state ? 0 : 255);
+// }
+
+function drawToFieldRGB(point, state) {
   gameField[point.x + point.y * texWidth] = state;
-  drawPoint(point, state ? 0 : 255);
+  drawPointRGB(point, colors[state]);
 }

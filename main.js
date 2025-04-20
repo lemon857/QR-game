@@ -21,6 +21,17 @@ let score = 0;
 let main_loop_id;
 let main_render_id;
 
+let colors = [ 
+  {R: 255, G: 255, B: 255},
+  {R: 8, G: 242, B: 242},
+  {R: 8, G: 8, B: 242},
+  {R: 240, G: 166, B: 2},
+  {R: 242, G: 242, B: 8},
+  {R: 2, G: 242, B: 2},
+  {R: 242, G: 8, B: 2},
+  {R: 166, G: 2, B: 242}
+]
+
 function initSize(width) {
   texWidth  = width;
   texHeight = width * 2;
@@ -42,7 +53,7 @@ function updateRecord() {
 
 function generateField() {
   for (let i = 0; i < gameField.length; i++) {
-    gameField[i] = false;
+    gameField[i] = 0;
   }
   updateTexture();
 }
@@ -50,10 +61,10 @@ function generateField() {
 function updateTexture() {
   
   for (let i = 0; i < pixelData.length; i += 3) {
-    let cur = gameField[i / 3] ? 0 : 255;
-    pixelData[i] = cur;
-    pixelData[i + 1] = cur;
-    pixelData[i + 2] = cur;
+    let cur = gameField[i / 3];
+    pixelData[i] = colors[cur].R;
+    pixelData[i + 1] = colors[cur].G;
+    pixelData[i + 2] = colors[cur].B;
   } 
 }
 
@@ -61,7 +72,7 @@ function updateField() {
   for (let i = 0; i < texHeight; i++) {
     let line = true;
     for (let j = 0; j < texWidth; ++j) {
-      if (!gameField[j + i * texWidth]) {
+      if (gameField[j + i * texWidth] == 0) {
         line = false;
         break;
       }
@@ -86,14 +97,24 @@ function updateField() {
   }
 }
 
+let lose_flag = false
+
 function mainLoop() {
 
-  cur_figure.move(0, -1);
+  cur_figure.move(0, -1)
+
+  if (lose_flag && cur_figure.y >= spawn_Y) {
+    stopGame()
+    return
+  }
 
   if (!cur_figure.is_movable) {
-    updateField();    
-    updateTexture();
-    nextFigure(); 
+    updateField()
+    updateTexture()
+    nextFigure()
+    lose_flag = true
+  } else {
+    lose_flag = false
   }
 }
 
@@ -107,26 +128,34 @@ function updateResolution(e) {
   nextFigure();
 }
 
+function stopGame() {
+  lose_flag = false
+  clearInterval(main_loop_id)
+  clearInterval(main_render_id)
+  alert('Game stop, reload page for restart, your record: ' + score)
+}
+
 document.addEventListener('keypress', function(event) {
-  // console.log(event.keyCode);
+  // console.log(event.key);
 
-  if (event.keyCode == 97) {          // a
-    cur_figure.move(-1, 0);
+  if (event.key == 'a') {          // a
+    cur_figure.move(-1, 0)
 
-  } else if (event.keyCode == 100) {  // d
-    cur_figure.move(1, 0);
+  } else if (event.key == 'd') {  // d
+    cur_figure.move(1, 0)
 
-  } else if (event.keyCode == 115) {  // s
-    cur_figure.move(0, -1);
+  } else if (event.key == 's') {  // s
+    cur_figure.move(0, -1)
 
-  } else if (event.keyCode == 114) {  // r 
-    cur_figure.next_rotate();
+  } else if (event.key == 'r') {  // r 
+    cur_figure.next_rotate()
 
-  } else if (event.keyCode == 103) {  // g
-    clearInterval(main_loop_id);
-    clearInterval(main_render_id);
-    alert('Game stop, reload page for restart');
-  } 
+  } else if (event.key == 'g') {  // g
+    stopGame()
+   
+  } else if (event.key == ' ') {
+    cur_figure.drop()
+  }
 });
 
 const resolutions = [ 8, 12, 16, 20 ];

@@ -54,3 +54,9 @@ canvas {
   left: 51%;
   border-radius: 3px;
 }
+
+.ShadowSlider {
+  position: absolute;
+  top: 25%;
+  left: 45%;
+}

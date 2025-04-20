@@ -17,6 +17,10 @@ let cur_figure
 let score_element
 let record_element
 let shadow_switcher
+let shadow_slider
+
+let shadow_brightness
+
 let score = 0
 
 let main_loop_id
@@ -107,6 +111,7 @@ function mainLoop() {
   cur_figure.move(0, -1)
 
   if (lose_flag && cur_figure.y >= spawn_Y) {
+    alert("You lose, your score: " + score)
     stopGame()
     return
   }
@@ -146,9 +151,11 @@ function startGame() {
 
 function stopGame() {
   lose_flag = false
+  score = 0
+  score_element.textContent = "Score: " + score;
+
   clearInterval(main_loop_id)
   clearInterval(main_render_id)
-  // alert('Game stop, reload page for restart, your record: ' + score)
 }
 
 function restartGame() {
@@ -160,7 +167,7 @@ function restartGame() {
 document.addEventListener('keypress', function(event) {
   // console.log(event.key);
 
-  if (event.key == 'a') {          // a
+  if (event.key == 'a') {         // a
     cur_figure.move(-1, 0)
 
   } else if (event.key == 'd') {  // d
@@ -188,6 +195,20 @@ document.addEventListener('DOMContentLoaded', function() {
   record_element = document.getElementById("record")
 
   shadow_switcher = document.getElementById("shadowSwitch")
+  shadow_slider = document.getElementById("shadowSlider")
+
+  restart_button = document.getElementById("restartButton")
+
+  restart_button.addEventListener('click', function() {
+    restart_button.blur()
+    restartGame()
+  })
+
+  shadow_slider.addEventListener('input', function() {
+    shadow_slider.blur()
+    shadow_brightness = shadow_slider.value
+    setCookie('shadow_brightness', shadow_brightness)
+  })
 
   shadow_switcher.addEventListener('change', function() {
     shadow_switcher.blur()
@@ -200,8 +221,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   })
 
-  // console.log(getCookie('enable_shadows'))
+  shadow_brightness = Number(getCookie('shadow_brightness'))
+
   enable_shadows = (getCookie('enable_shadows') == 'true')
+
   shadow_switcher.checked = enable_shadows
   
   initSize(Number(getCookie('size')) == 0 ? 8 : Number(getCookie('size')))
@@ -223,5 +246,4 @@ document.addEventListener('DOMContentLoaded', function() {
   setupWebGL()
 
   startGame()
-
  });

@@ -100,9 +100,20 @@ class Figure {
       for (let i = 0; i < this.shadow.length; ++i) {
         drawPoint(this.shadow[i], 192)
       }
+
+
       for (let i = 0; i < this.points.length; ++i) {
         if (this.mirror.length > 0) {
-          drawPoint(this.mirror[i], 128)
+          if (this.is_other_wall(this.mirror[i].x, this.mirror[i].y)) {
+            return
+          }
+        }
+      }
+
+      
+      for (let i = 0; i < this.points.length; ++i) {
+        if (this.mirror.length > 0) {
+          drawPoint(this.mirror[i], shadow_brightness)
         }
       }
     }
@@ -151,12 +162,18 @@ class Figure {
       for (let k = py - 1; k >= 0; --k) {
         if (this.is_other_wall(px, k - 1) || k == 0) {
           if (dy > py - k) {
-            dy = py - k 
+            dy = py - k
           }
         }
       }
     }
     if (dy == texHeight) return
+
+    for (let i = 0; i < this.points.length; ++i) {
+      if (this.is_other_wall(this.points[i].x, this.points[i].y - dy)) {
+        return
+      }
+    }
 
     this.mirror = []
   
@@ -189,6 +206,8 @@ class Figure {
         }
       }
     }
+
+    // console.log(dy)
     // if (dy == texHeight) dy = 0
 
     // for (let i = 0; i < this.points.length; ++i) {

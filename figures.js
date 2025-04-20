@@ -1,30 +1,31 @@
 class Figure {
-  shadow = [];
-  points = [];
-  states = [];
-  cur_state = 0;
-  max_states = 0;
+  shadow = []
+  points = []
+  states = []
+  mirror = []
+  cur_state = 0
+  max_states = 0
 
-  is_movable = true;
+  is_movable = true
 
   is_dropped = false
 
   color_number = 0
 
-  x = 0;
-  y = 0;
+  x = 0
+  y = 0
 
   constructor(x, y, states) {
-    this.x = x;
-    this.y = y;
-    this.states = states;
-    this.max_states = states.length;
-    const state = this.states[this.cur_state];
+    this.x = x
+    this.y = y
+    this.states = states
+    this.max_states = states.length
+    const state = this.states[this.cur_state]
     for (let i = 0; i < state.length; ++i) {
       this.points.push({
         x: this.x + state[i].x,
         y: this.y + state[i].y
-      });
+      })
     }
     this.color_number = (Math.floor(Math.random() * 10000) % (colors.length - 1)) + 1
     // console.log(this.color_number)
@@ -34,8 +35,8 @@ class Figure {
 
     const state = this.states[this.cur_state];
     for (let i = 0; i < state.length; ++i) {
-      this.points[i].x = this.x + state[i].x;
-      this.points[i].y = this.y + state[i].y;
+      this.points[i].x = this.x + state[i].x
+      this.points[i].y = this.y + state[i].y
     }
   }
 
@@ -74,26 +75,44 @@ class Figure {
     }
   }
 
-  clear_state() {
+  clear_shadow() {
     if (shadow_switcher) {
       for (let i = 0; i < this.shadow.length; ++i) {
-        drawPoint(this.shadow[i], 255);
+        drawPoint(this.shadow[i], 255)
+      }
+      for (let i = 0; i < this.points.length; ++i) {
+        if (this.mirror.length > 0) {
+          drawPoint(this.mirror[i], 255)
+        }
       }
     }
+  }
+
+  clear_state() {
     for (let i = 0; i < this.points.length; ++i) {
-      drawToFieldRGB(this.points[i], 0);
+      drawToFieldRGB(this.points[i], 0)
+    }
+    this.clear_shadow()
+  }
+
+  draw_shadow() {
+    if (enable_shadows) {
+      for (let i = 0; i < this.shadow.length; ++i) {
+        drawPoint(this.shadow[i], 192)
+      }
+      for (let i = 0; i < this.points.length; ++i) {
+        if (this.mirror.length > 0) {
+          drawPoint(this.mirror[i], 128)
+        }
+      }
     }
   }
 
   draw() {
-    if (enable_shadows) {
-      for (let i = 0; i < this.shadow.length; ++i) {
-        drawPoint(this.shadow[i], 192);
-      }
-    }
     for (let i = 0; i < this.points.length; ++i) {
       drawToFieldRGB(this.points[i], this.color_number);
     }
+    this.draw_shadow()
   }
 
   move(dx, dy) {
@@ -105,7 +124,7 @@ class Figure {
         || this.is_other_wall(this.points[i].x + dx, this.points[i].y + dy)) {
 
         if (this.is_other_wall(this.points[i].x, this.points[i].y + dy) || this.points[i].y + dy <= 0) {
-          this.is_movable = false;
+          this.is_movable = false
         }
         return;
       }
@@ -133,13 +152,14 @@ class Figure {
         if (this.is_other_wall(px, k - 1) || k == 0) {
           if (dy > py - k) {
             dy = py - k 
-            // console.log('K: ' + k + ' dy: ' + dy)
           }
         }
       }
     }
     if (dy == texHeight) return
 
+    this.mirror = []
+  
     this.is_dropped = true
 
     this.clear_state()
@@ -149,19 +169,42 @@ class Figure {
     this.use_state()
 
     if (enable_shadows) {
-      this.updateShadow()
+      this.clear_shadow()
     }
   }
 
   updateShadow() {
-    this.shadow = [];
+    this.shadow = []
+    this.mirror = []
+
+    let dy = texHeight
     for (let i = 0; i < this.points.length; ++i) {
-      let px = this.points[i].x;
-      let py = this.points[i].y;
+      let px = this.points[i].x
+      let py = this.points[i].y
       for (let k = py - 1; k >= 0; --k) {
-        if (gameField[px + k * texWidth]) break
-        this.shadow.push({ x: px, y: k });
+        if (this.is_other_wall(px, k - 1) || k == 0) {
+          if (dy > py - k) {
+            dy = py - k 
+          }
+        }
       }
+    }
+    // if (dy == texHeight) dy = 0
+
+    // for (let i = 0; i < this.points.length; ++i) {
+    //   let px = this.points[i].x
+    //   let py = this.points[i].y
+    //
+    //   for (let k = py - 1; k >= 0; --k) {
+    //     if (gameField[px + k * texWidth]) break
+    //     this.shadow.push({ x: px, y: k })
+    //   }
+    // }
+
+    // if (dy <= 0) return
+
+    for (let i = 0; i < this.points.length; ++i) {
+      this.mirror.push({ x: this.points[i].x, y: this.points[i].y - dy })
     }
   }
 

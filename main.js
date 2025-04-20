@@ -112,6 +112,7 @@ function mainLoop() {
   }
 
   if (!cur_figure.is_movable) {
+    cur_figure.clear_shadow()
     updateField()
     updateTexture()
     nextFigure()
